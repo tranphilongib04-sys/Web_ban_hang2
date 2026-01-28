@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, ShoppingBag, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, ShoppingBag, Users, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
 
 interface TodayStats {
   totalSales: number;
@@ -21,9 +21,19 @@ interface TodayOrder {
   status: 'pending' | 'completed' | 'cancelled';
 }
 
+interface Reminder {
+  id: number;
+  type: 'urgent' | 'warning' | 'info';
+  title: string;
+  description: string;
+  dueTime: string;
+  deadline: Date;
+  isOverdue: boolean;
+  timeUntil: string;
+}
+
 /**
- * Mobile Today dashboard
- * Shows today's sales performance and recent transactions
+ * Mobile Today dashboard với reminder/deadline logic
  */
 export function MobileTodayComponent() {
   const [stats, setStats] = useState<TodayStats>({
@@ -44,6 +54,8 @@ export function MobileTodayComponent() {
     { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending' },
   ]);
 
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+
   const [hourlyData, setHourlyData] = useState([
     { hour: '08:00', sales: 0 },
     { hour: '09:00', sales: 5000000 },
@@ -56,6 +68,115 @@ export function MobileTodayComponent() {
     { hour: '16:00', sales: 4500000 },
     { hour: '17:00', sales: 3000000 },
   ]);
+
+  // Initialize reminders based on business logic
+  useEffect(() => {
+    const now = new Date();
+    const newReminders: Reminder[] = [];
+
+    // Check pending orders
+    const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
+    if (pendingOrdersCount > 0) {
+      const deadline1 = new Date(now);
+      deadline1.setHours(18, 0, 0);
+      newReminders.push({
+        id: 1,
+        type: 'urgent',
+        title: `${pendingOrdersCount} đơn hàng chờ xử lý`,
+        description: 'Cần xử lý trước 18:00 hôm nay',
+        dueTime: '18:00',
+        deadline: deadline1,
+        isOverdue: deadline1 < now,
+        timeUntil: getTimeUntil(deadline1, now),
+      });
+    }
+
+    // Inventory low stock reminder
+    const deadline2 = new Date(now);
+    deadline2.setHours(20, 0, 0);
+    newReminders.push({
+      id: 2,
+      type: 'warning',
+      title: 'Kiểm tra tồn kho',
+      description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
+      dueTime: '20:00',
+      deadline: deadline2,
+      isOverdue: deadline2 < now,
+      timeUntil: getTimeUntil(deadline2, now),
+    });
+
+    // Daily report reminder
+    const deadline3 = new Date(now);
+    deadline3.setHours(22, 0, 0);
+    newReminders.push({
+      id: 3,
+      type: 'info',
+      title: 'Xuất báo cáo ngày',
+      description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
+      dueTime: '22:00',
+      deadline: deadline3,
+      isOverdue: deadline3 < now,
+      timeUntil: getTimeUntil(deadline3, now),
+    });
+
+    // Check unpaid orders
+    const unpaidCount = 2; // mock data
+    if (unpaidCount > 0) {
+      const deadline4 = new Date(now);
+      deadline4.setHours(19, 0, 0);
+      newReminders.push({
+        id: 4,
+        type: 'urgent',
+        title: `${unpaidCount} đơn hàng chưa thanh toán`,
+        description: 'Cần nhắc khách hàng thanh toán',
+        dueTime: '19:00',
+        deadline: deadline4,
+        isOverdue: deadline4 < now,
+        timeUntil: getTimeUntil(deadline4, now),
+      });
+    }
+
+    setReminders(newReminders.sort((a, b) => a.deadline.getTime() - b.deadline.getTime()));
+  }, [orders]);
+
+  const getTimeUntil = (deadline: Date, now: Date): string => {
+    const diff = deadline.getTime() - now.getTime();
+    if (diff < 0) return 'Quá hạn';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) return `Còn ${hours}h ${minutes}m`;
+    if (minutes > 0) return `Còn ${minutes} phút`;
+    return 'Sắp hết giờ';
+  };
+
+  const getReminderIcon = (type: string) => {
+    switch (type) {
+      case 'urgent':
+        return <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
+      case 'warning':
+        return <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'info':
+        return <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      default:
+        return null;
+    }
+  };
+
+  const getReminderBg = (type: string, isOverdue: boolean) => {
+    if (isOverdue) return 'bg-red-50 dark:bg-red-900 border-l-4 border-red-500';
+    switch (type) {
+      case 'urgent':
+        return 'bg-red-50 dark:bg-red-900 border-l-4 border-red-500';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-500';
+      case 'info':
+        return 'bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500';
+      default:
+        return '';
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -93,6 +214,67 @@ export function MobileTodayComponent() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto pb-20">
+        {/* Reminders Alert Section */}
+        {reminders.length > 0 && (
+          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 border-b border-orange-200 dark:border-orange-800">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <h2 className="font-semibold text-orange-900 dark:text-orange-200">Nhắc Hạn Hôm Nay</h2>
+              <span className="ml-auto bg-orange-600 text-white text-xs px-2 py-1 rounded-full">
+                {reminders.length}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className={`p-3 rounded-lg ${getReminderBg(reminder.type, reminder.isOverdue)}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1">{getReminderIcon(reminder.type)}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-sm ${
+                        reminder.isOverdue
+                          ? 'text-red-900 dark:text-red-100'
+                          : reminder.type === 'urgent'
+                            ? 'text-red-900 dark:text-red-100'
+                            : reminder.type === 'warning'
+                              ? 'text-yellow-900 dark:text-yellow-100'
+                              : 'text-blue-900 dark:text-blue-100'
+                      }`}>
+                        {reminder.title}
+                      </p>
+                      <p className={`text-xs mt-1 ${
+                        reminder.isOverdue
+                          ? 'text-red-700 dark:text-red-200'
+                          : reminder.type === 'urgent'
+                            ? 'text-red-700 dark:text-red-200'
+                            : reminder.type === 'warning'
+                              ? 'text-yellow-700 dark:text-yellow-200'
+                              : 'text-blue-700 dark:text-blue-200'
+                      }`}>
+                        {reminder.description}
+                      </p>
+                    </div>
+                    <div className={`text-right text-xs font-semibold whitespace-nowrap ${
+                      reminder.isOverdue
+                        ? 'text-red-600 dark:text-red-400'
+                        : reminder.type === 'urgent'
+                          ? 'text-red-600 dark:text-red-400'
+                          : reminder.type === 'warning'
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      <div>{reminder.dueTime}</div>
+                      <div>{reminder.timeUntil}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Main Stats */}
         <div className="p-4 space-y-3">
           {/* Total Sales */}

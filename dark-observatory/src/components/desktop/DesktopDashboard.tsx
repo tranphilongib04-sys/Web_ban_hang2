@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
@@ -16,10 +16,19 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { TrendingUp, DollarSign, ShoppingCart, Users } from 'lucide-react';
+import { TrendingUp, DollarSign, ShoppingCart, Users, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 
 interface DesktopDashboardProps {
   activeTab: string;
+}
+
+interface Reminder {
+  id: number;
+  type: 'urgent' | 'warning' | 'info';
+  title: string;
+  description: string;
+  dueTime: string;
+  timeUntil: string;
 }
 
 const salesData = [
@@ -56,10 +65,145 @@ const StatCard = ({ icon: Icon, label, value, trend }: { icon: any; label: strin
 );
 
 export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
+  const [reminders, setReminders] = useState<Reminder[]>([]);
+
+  useEffect(() => {
+    const now = new Date();
+    const newReminders: Reminder[] = [
+      {
+        id: 1,
+        type: 'urgent',
+        title: '2 đơn hàng chờ xử lý',
+        description: 'Cần xử lý trước 18:00 hôm nay',
+        dueTime: '18:00',
+        timeUntil: getTimeUntil(18, 0, now),
+      },
+      {
+        id: 2,
+        type: 'urgent',
+        title: '2 đơn hàng chưa thanh toán',
+        description: 'Cần nhắc khách hàng thanh toán',
+        dueTime: '19:00',
+        timeUntil: getTimeUntil(19, 0, now),
+      },
+      {
+        id: 3,
+        type: 'warning',
+        title: 'Kiểm tra tồn kho',
+        description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
+        dueTime: '20:00',
+        timeUntil: getTimeUntil(20, 0, now),
+      },
+      {
+        id: 4,
+        type: 'info',
+        title: 'Xuất báo cáo ngày',
+        description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
+        dueTime: '22:00',
+        timeUntil: getTimeUntil(22, 0, now),
+      },
+    ];
+    setReminders(newReminders);
+  }, []);
+
+  const getTimeUntil = (hour: number, minute: number, now: Date): string => {
+    const deadline = new Date(now);
+    deadline.setHours(hour, minute, 0);
+    const diff = deadline.getTime() - now.getTime();
+    if (diff < 0) return 'Quá hạn';
+    
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes} phút`;
+    return 'Sắp hết giờ';
+  };
+
+  const getReminderIcon = (type: string) => {
+    switch (type) {
+      case 'urgent':
+        return <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
+      case 'warning':
+        return <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'info':
+        return <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+      default:
+        return null;
+    }
+  };
+
+  const getReminderBg = (type: string) => {
+    switch (type) {
+      case 'urgent':
+        return 'bg-red-50 dark:bg-red-900 border-l-4 border-red-500';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900 border-l-4 border-yellow-500';
+      case 'info':
+        return 'bg-blue-50 dark:bg-blue-900 border-l-4 border-blue-500';
+      default:
+        return '';
+    }
+  };
+
   if (activeTab !== 'dashboard') return null;
 
   return (
     <div className="space-y-8">
+      {/* Reminders Alert */}
+      {reminders.length > 0 && (
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertCircle className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+            <h2 className="text-lg font-bold text-orange-900 dark:text-orange-200">Nhắc Hạn Hôm Nay</h2>
+            <span className="ml-auto bg-orange-600 text-white text-sm px-3 py-1 rounded-full font-semibold">
+              {reminders.length}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {reminders.map((reminder) => (
+              <div
+                key={reminder.id}
+                className={`p-4 rounded-lg ${getReminderBg(reminder.type)}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-1">{getReminderIcon(reminder.type)}</div>
+                  <div className="flex-1">
+                    <p className={`font-semibold ${
+                      reminder.type === 'urgent'
+                        ? 'text-red-900 dark:text-red-100'
+                        : reminder.type === 'warning'
+                          ? 'text-yellow-900 dark:text-yellow-100'
+                          : 'text-blue-900 dark:text-blue-100'
+                    }`}>
+                      {reminder.title}
+                    </p>
+                    <p className={`text-sm mt-1 ${
+                      reminder.type === 'urgent'
+                        ? 'text-red-700 dark:text-red-200'
+                        : reminder.type === 'warning'
+                          ? 'text-yellow-700 dark:text-yellow-200'
+                          : 'text-blue-700 dark:text-blue-200'
+                    }`}>
+                      {reminder.description}
+                    </p>
+                    <div className={`text-xs font-semibold mt-2 ${
+                      reminder.type === 'urgent'
+                        ? 'text-red-600 dark:text-red-400'
+                        : reminder.type === 'warning'
+                          ? 'text-yellow-600 dark:text-yellow-400'
+                          : 'text-blue-600 dark:text-blue-400'
+                    }`}>
+                      {reminder.dueTime} ({reminder.timeUntil})
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-6">
         <StatCard
