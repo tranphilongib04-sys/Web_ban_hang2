@@ -69,40 +69,66 @@ export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
 
   useEffect(() => {
     const now = new Date();
-    const newReminders: Reminder[] = [
-      {
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const newReminders: Reminder[] = [];
+
+    // Pending orders reminder - chỉ hôm nay
+    const deadline1 = new Date(now);
+    deadline1.setHours(18, 0, 0);
+    if (deadline1 >= now && deadline1.toDateString() === today.toDateString()) {
+      newReminders.push({
         id: 1,
         type: 'urgent',
         title: '2 đơn hàng chờ xử lý',
         description: 'Cần xử lý trước 18:00 hôm nay',
         dueTime: '18:00',
         timeUntil: getTimeUntil(18, 0, now),
-      },
-      {
+      });
+    }
+
+    // Unpaid orders reminder - chỉ hôm nay
+    const deadline2 = new Date(now);
+    deadline2.setHours(19, 0, 0);
+    if (deadline2 >= now && deadline2.toDateString() === today.toDateString()) {
+      newReminders.push({
         id: 2,
         type: 'urgent',
         title: '2 đơn hàng chưa thanh toán',
         description: 'Cần nhắc khách hàng thanh toán',
         dueTime: '19:00',
         timeUntil: getTimeUntil(19, 0, now),
-      },
-      {
+      });
+    }
+
+    // Inventory check reminder - chỉ hôm nay
+    const deadline3 = new Date(now);
+    deadline3.setHours(20, 0, 0);
+    if (deadline3 >= now && deadline3.toDateString() === today.toDateString()) {
+      newReminders.push({
         id: 3,
         type: 'warning',
         title: 'Kiểm tra tồn kho',
         description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
         dueTime: '20:00',
         timeUntil: getTimeUntil(20, 0, now),
-      },
-      {
+      });
+    }
+
+    // Daily report reminder - chỉ hôm nay
+    const deadline4 = new Date(now);
+    deadline4.setHours(22, 0, 0);
+    if (deadline4 >= now && deadline4.toDateString() === today.toDateString()) {
+      newReminders.push({
         id: 4,
         type: 'info',
         title: 'Xuất báo cáo ngày',
         description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
         dueTime: '22:00',
         timeUntil: getTimeUntil(22, 0, now),
-      },
-    ];
+      });
+    }
+
     setReminders(newReminders);
   }, []);
 

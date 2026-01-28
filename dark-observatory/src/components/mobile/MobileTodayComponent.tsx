@@ -68,6 +68,8 @@ export function MobileTodayComponent() {
   // Initialize reminders based on business logic
   useEffect(() => {
     const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
     const newReminders: Reminder[] = [];
 
     // Check pending orders
@@ -75,61 +77,71 @@ export function MobileTodayComponent() {
     if (pendingOrdersCount > 0) {
       const deadline1 = new Date(now);
       deadline1.setHours(18, 0, 0);
+      
+      // Chỉ thêm nếu deadline là hôm nay và chưa quá hạn
+      if (deadline1 >= now && deadline1.toDateString() === today.toDateString()) {
+        newReminders.push({
+          id: 1,
+          type: 'urgent',
+          title: `${pendingOrdersCount} đơn hàng chờ xử lý`,
+          description: 'Cần xử lý trước 18:00 hôm nay',
+          dueTime: '18:00',
+          deadline: deadline1,
+          isOverdue: deadline1 < now,
+          timeUntil: getTimeUntil(deadline1, now),
+        });
+      }
+    }
+
+    // Inventory low stock reminder - chỉ hôm nay
+    const deadline2 = new Date(now);
+    deadline2.setHours(20, 0, 0);
+    if (deadline2 >= now && deadline2.toDateString() === today.toDateString()) {
       newReminders.push({
-        id: 1,
-        type: 'urgent',
-        title: `${pendingOrdersCount} đơn hàng chờ xử lý`,
-        description: 'Cần xử lý trước 18:00 hôm nay',
-        dueTime: '18:00',
-        deadline: deadline1,
-        isOverdue: deadline1 < now,
-        timeUntil: getTimeUntil(deadline1, now),
+        id: 2,
+        type: 'warning',
+        title: 'Kiểm tra tồn kho',
+        description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
+        dueTime: '20:00',
+        deadline: deadline2,
+        isOverdue: deadline2 < now,
+        timeUntil: getTimeUntil(deadline2, now),
       });
     }
 
-    // Inventory low stock reminder
-    const deadline2 = new Date(now);
-    deadline2.setHours(20, 0, 0);
-    newReminders.push({
-      id: 2,
-      type: 'warning',
-      title: 'Kiểm tra tồn kho',
-      description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
-      dueTime: '20:00',
-      deadline: deadline2,
-      isOverdue: deadline2 < now,
-      timeUntil: getTimeUntil(deadline2, now),
-    });
-
-    // Daily report reminder
+    // Daily report reminder - chỉ hôm nay
     const deadline3 = new Date(now);
     deadline3.setHours(22, 0, 0);
-    newReminders.push({
-      id: 3,
-      type: 'info',
-      title: 'Xuất báo cáo ngày',
-      description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
-      dueTime: '22:00',
-      deadline: deadline3,
-      isOverdue: deadline3 < now,
-      timeUntil: getTimeUntil(deadline3, now),
-    });
+    if (deadline3 >= now && deadline3.toDateString() === today.toDateString()) {
+      newReminders.push({
+        id: 3,
+        type: 'info',
+        title: 'Xuất báo cáo ngày',
+        description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
+        dueTime: '22:00',
+        deadline: deadline3,
+        isOverdue: deadline3 < now,
+        timeUntil: getTimeUntil(deadline3, now),
+      });
+    }
 
-    // Check unpaid orders
+    // Check unpaid orders - chỉ hôm nay
     const unpaidCount = 2; // mock data
     if (unpaidCount > 0) {
       const deadline4 = new Date(now);
       deadline4.setHours(19, 0, 0);
-      newReminders.push({
-        id: 4,
-        type: 'urgent',
-        title: `${unpaidCount} đơn hàng chưa thanh toán`,
-        description: 'Cần nhắc khách hàng thanh toán',
-        dueTime: '19:00',
-        deadline: deadline4,
-        isOverdue: deadline4 < now,
-        timeUntil: getTimeUntil(deadline4, now),
-      });
+      if (deadline4 >= now && deadline4.toDateString() === today.toDateString()) {
+        newReminders.push({
+          id: 4,
+          type: 'urgent',
+          title: `${unpaidCount} đơn hàng chưa thanh toán`,
+          description: 'Cần nhắc khách hàng thanh toán',
+          dueTime: '19:00',
+          deadline: deadline4,
+          isOverdue: deadline4 < now,
+          timeUntil: getTimeUntil(deadline4, now),
+        });
+      }
     }
 
     setReminders(newReminders.sort((a, b) => a.deadline.getTime() - b.deadline.getTime()));
