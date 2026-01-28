@@ -48,4 +48,4 @@ const options = {
   apis: ['./src/lib/swagger.ts', './src/app/api/**/*.ts'],
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+export const swaggerSpec = swaggerJsdoc(options) as Record<string, unknown>;

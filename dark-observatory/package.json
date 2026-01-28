@@ -12,7 +12,9 @@
     "electron": "electron .",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3210 && electron .\"",
     "electron:build": "npm run build && electron-builder",
-    "electron:pack": "npm run build && electron-builder --dir"
+    "electron:pack": "npm run build && electron-builder --dir",
+    "index": "drizzle-kit generate && drizzle-kit migrate && drizzle-kit push",
+    "index:auto": "bash trigger-indexing.sh"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",

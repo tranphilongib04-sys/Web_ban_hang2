@@ -136,9 +136,9 @@ export async function getProductsByCategory(category: string) {
 
   const stats = {
     totalProducts: categoryProducts.length,
-    totalValue: categoryProducts.reduce((sum, p) => sum + p.price * p.quantity, 0),
-    averagePrice: categoryProducts.reduce((sum, p) => sum + p.price, 0) / categoryProducts.length || 0,
-    totalQuantity: categoryProducts.reduce((sum, p) => sum + p.quantity, 0),
+    totalValue: categoryProducts.reduce((sum: number, p) => sum + p.price * p.quantity, 0),
+    averagePrice: categoryProducts.reduce((sum: number, p) => sum + p.price, 0) / categoryProducts.length || 0,
+    totalQuantity: categoryProducts.reduce((sum: number, p) => sum + p.quantity, 0),
   };
 
   return { products: categoryProducts, statistics: stats };
@@ -294,7 +294,7 @@ export async function getCustomerWithHistory(customerId: number) {
     customer: customer[0],
     orders: customerOrders,
     totalOrders: customerOrders.length,
-    totalSpent: customerOrders.reduce((sum, order) => sum + order.totalAmount, 0),
+    totalSpent: customerOrders.reduce((sum: number, order) => sum + order.totalAmount, 0),
   };
 }
 
