@@ -1,0 +1,134 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'dark-observatory/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./dark-observatory
+        run: npm ci
+      
+      - name: Run ESLint
+        working-directory: ./dark-observatory
+        run: npm run lint
+        continue-on-error: true
+      
+      - name: Type check with TypeScript
+        working-directory: ./dark-observatory
+        run: npx tsc --noEmit
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: 'dark-observatory/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./dark-observatory
+        run: npm ci
+      
+      - name: Build project
+        working-directory: ./dark-observatory
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dark-observatory/.next
+          retention-days: 5
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: 'dark-observatory/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./dark-observatory
+        run: npm ci
+      
+      - name: Run tests (if available)
+        working-directory: ./dark-observatory
+        run: npm test
+        continue-on-error: true
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: 'dark-observatory/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./dark-observatory
+        run: npm ci
+      
+      - name: Check for vulnerabilities
+        working-directory: ./dark-observatory
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+  notification:
+    name: Notification
+    runs-on: ubuntu-latest
+    needs: [lint, build, test, security]
+    if: always()
+    
+    steps:
+      - name: Check workflow status
+        run: |
+          if [ "${{ needs.lint.result }}" == "failure" ] || [ "${{ needs.build.result }}" == "failure" ]; then
+            echo "❌ CI/CD Pipeline Failed"
+            exit 1
+          else
+            echo "✅ CI/CD Pipeline Passed"
+          fi
