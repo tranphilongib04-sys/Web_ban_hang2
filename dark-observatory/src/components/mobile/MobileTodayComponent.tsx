@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, DollarSign, ShoppingBag, Users } from 'lucide-react';
 
 interface TodayStats {
@@ -194,9 +193,9 @@ export function MobileTodayComponent() {
         <div className="p-4 border-t">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-sm font-semibold">Đơn Hàng Hôm Nay</h2>
-            <Button variant="ghost" size="sm" className="text-xs">
+            <button className="text-xs px-2 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
               Xem Tất Cả
-            </Button>
+            </button>
           </div>
 
           <div className="space-y-2">
@@ -229,9 +228,9 @@ export function MobileTodayComponent() {
 
       {/* Footer Action */}
       <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t p-4">
-        <Button className="w-full bg-blue-500 hover:bg-blue-600">
+        <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">
           Xem Báo Cáo Chi Tiết
-        </Button>
+        </button>
       </div>
     </div>
   );

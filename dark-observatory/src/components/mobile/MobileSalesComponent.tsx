@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ShoppingCart, Plus, Minus, Trash2, Search } from 'lucide-react';
 
 interface CartItem {
@@ -114,19 +112,20 @@ export function MobileSalesComponent() {
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
+              <input
+                type="text"
                 placeholder="Tìm sản phẩm..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearching(true)}
-                className="pl-10 rounded-lg"
+                className="pl-10 rounded-lg w-full p-2 border border-gray-300 dark:border-gray-600"
               />
             </div>
 
             {/* Cart Button */}
-            <Button
+            <button
               onClick={() => setShowCart(!showCart)}
-              className="relative bg-blue-500 hover:bg-blue-600"
+              className="relative bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <ShoppingCart className="w-5 h-5" />
               {cartItems.length > 0 && (
@@ -134,7 +133,7 @@ export function MobileSalesComponent() {
                   {cartItems.length}
                 </span>
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -165,39 +164,33 @@ export function MobileSalesComponent() {
                           {item.price.toLocaleString('vi-VN')}đ x {item.quantity}
                         </p>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                        className="text-red-500 hover:text-red-600 p-1"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
 
                     {/* Quantity Controls */}
                     <div className="flex items-center gap-2 bg-white dark:bg-slate-700 rounded p-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="text-xs"
+                        className="text-xs px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                       >
                         <Minus className="w-4 h-4" />
-                      </Button>
+                      </button>
 
                       <span className="flex-1 text-center font-semibold">
                         {item.quantity}
                       </span>
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="text-xs"
+                        className="text-xs px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                       >
                         <Plus className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </div>
 
                     {/* Subtotal */}
@@ -225,19 +218,18 @@ export function MobileSalesComponent() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={clearCart}
-                    className="flex-1"
+                    className="flex-1 bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded"
                   >
                     Xóa Giỏ
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={handleCheckout}
-                    className="flex-1 bg-green-500 hover:bg-green-600"
+                    className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded ml-2"
                   >
                     Thanh Toán
-                  </Button>
+                  </button>
                 </div>
               </div>
             )}
@@ -267,13 +259,13 @@ export function MobileSalesComponent() {
                     {product.price.toLocaleString('vi-VN')}đ
                   </p>
                 </div>
-                <Button
+                <button
                   onClick={() => addToCart(product.id, product.name, product.price)}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-sm"
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white text-sm py-2 rounded flex items-center justify-center gap-1"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
+                  <Plus className="w-4 h-4" />
                   Thêm
-                </Button>
+                </button>
               </div>
             ))}
           </div>

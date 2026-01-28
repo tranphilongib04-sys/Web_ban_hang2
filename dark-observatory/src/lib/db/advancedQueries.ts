@@ -39,7 +39,7 @@ export async function searchProducts({
   limit?: number;
   offset?: number;
 }) {
-  const conditions = [];
+  const conditions: any[] = [];
 
   // Add search condition
   if (searchTerm) {
@@ -78,21 +78,21 @@ export async function searchProducts({
   const orderClause =
     sortOrder === 'asc' ? asc(orderField) : desc(orderField);
 
-  // Execute query
-  let query = db.select().from(products);
+  // Execute query - build it conditionally
+  let query: any = db.select().from(products);
 
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
   }
 
-  const results = await query.orderBy(orderClause).limit(limit).offset(offset);
+  const results = (await query.orderBy(orderClause).limit(limit).offset(offset)) as any[];
 
   // Get total count for pagination
-  const countQuery = db.select({ count: sql<number>`count(*)` }).from(products);
+  let countQuery: any = db.select({ count: sql<number>`count(*)` }).from(products);
   if (conditions.length > 0) {
-    countQuery.where(and(...conditions));
+    countQuery = countQuery.where(and(...conditions));
   }
-  const countResult = await countQuery;
+  const countResult = (await countQuery) as any[];
   const totalCount = countResult[0]?.count || 0;
 
   return {
@@ -136,9 +136,9 @@ export async function getProductsByCategory(category: string) {
 
   const stats = {
     totalProducts: categoryProducts.length,
-    totalValue: categoryProducts.reduce((sum: number, p) => sum + p.price * p.quantity, 0),
-    averagePrice: categoryProducts.reduce((sum: number, p) => sum + p.price, 0) / categoryProducts.length || 0,
-    totalQuantity: categoryProducts.reduce((sum: number, p) => sum + p.quantity, 0),
+    totalValue: categoryProducts.reduce((sum: number, p: any) => sum + p.price * p.quantity, 0),
+    averagePrice: categoryProducts.reduce((sum: number, p: any) => sum + p.price, 0) / categoryProducts.length || 0,
+    totalQuantity: categoryProducts.reduce((sum: number, p: any) => sum + p.quantity, 0),
   };
 
   return { products: categoryProducts, statistics: stats };
@@ -172,7 +172,7 @@ export async function searchOrders({
   limit?: number;
   offset?: number;
 }) {
-  const conditions = [];
+  const conditions: any[] = [];
 
   if (customerId) conditions.push(eq(orders.customerId, customerId));
   if (status) conditions.push(eq(orders.status, status));
@@ -181,7 +181,7 @@ export async function searchOrders({
   if (startDate) conditions.push(sql`${orders.orderDate} >= ${startDate}`);
   if (endDate) conditions.push(sql`${orders.orderDate} <= ${endDate}`);
 
-  let query = db.select().from(orders);
+  let query: any = db.select().from(orders);
 
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
@@ -190,7 +190,7 @@ export async function searchOrders({
   const orderField = sortBy === 'total' ? orders.totalAmount : sortBy === 'date' ? orders.orderDate : orders.id;
   const orderClause = sortOrder === 'asc' ? asc(orderField) : desc(orderField);
 
-  const results = await query.orderBy(orderClause).limit(limit).offset(offset);
+  const results = (await query.orderBy(orderClause).limit(limit || 10).offset(offset || 0)) as any[];
 
   const countQuery = db.select({ count: sql<number>`count(*)` }).from(orders);
   if (conditions.length > 0) {
@@ -257,19 +257,19 @@ export async function searchCustomers({
     );
   }
 
-  let query = db.select().from(customers);
+  let query: any = db.select().from(customers);
 
   if (conditions.length > 0) {
     query = query.where(and(...conditions));
   }
 
-  const results = await query.limit(limit).offset(offset);
+  const results = (await query.limit(limit || 10).offset(offset || 0)) as any[];
 
-  const countQuery = db.select({ count: sql<number>`count(*)` }).from(customers);
+  let countQuery: any = db.select({ count: sql<number>`count(*)` }).from(customers);
   if (conditions.length > 0) {
-    countQuery.where(and(...conditions));
+    countQuery = countQuery.where(and(...conditions));
   }
-  const countResult = await countQuery;
+  const countResult = (await countQuery) as any[];
   const totalCount = countResult[0]?.count || 0;
 
   return {
@@ -294,7 +294,7 @@ export async function getCustomerWithHistory(customerId: number) {
     customer: customer[0],
     orders: customerOrders,
     totalOrders: customerOrders.length,
-    totalSpent: customerOrders.reduce((sum: number, order) => sum + order.totalAmount, 0),
+    totalSpent: customerOrders.reduce((sum: number, order: any) => sum + order.totalAmount, 0),
   };
 }
 
@@ -309,7 +309,7 @@ export async function getSalesSummary(startDate?: Date, endDate?: Date) {
   if (startDate) conditions.push(sql`${orders.orderDate} >= ${startDate}`);
   if (endDate) conditions.push(sql`${orders.orderDate} <= ${endDate}`);
 
-  let query = db.select({
+  let query: any = db.select({
     totalOrders: sql<number>`COUNT(*)`,
     totalRevenue: sql<number>`SUM(${orders.totalAmount})`,
     averageOrderValue: sql<number>`AVG(${orders.totalAmount})`,
@@ -321,7 +321,7 @@ export async function getSalesSummary(startDate?: Date, endDate?: Date) {
     query = query.where(and(...conditions));
   }
 
-  const result = await query;
+  const result = (await query) as any[];
 
   return result[0] || {
     totalOrders: 0,

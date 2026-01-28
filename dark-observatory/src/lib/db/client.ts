@@ -2,22 +2,48 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import * as schema from './schema';
 import path from 'path';
+import { existsSync, mkdirSync } from 'fs';
 
 /**
  * Database client using better-sqlite3 for local development
  * Uses file-based SQLite database
  */
 
-const dbPath = process.env.TURSO_DATABASE_URL || path.join(process.cwd(), 'data', 'tpb-manage.db');
+let client: Database.Database | null = null;
+let dbInstance: any = null;
 
-// Create database connection
-const client = new Database(dbPath);
+function initializeDatabase() {
+  if (client && dbInstance) return dbInstance;
 
-// Enable foreign keys
-client.pragma('foreign_keys = ON');
+  try {
+    const dbDir = path.join(process.cwd(), 'data');
+    const dbPath = process.env.TURSO_DATABASE_URL || path.join(dbDir, 'tpb-manage.db');
 
-// Export database instance with schema
-export const db = drizzle(client, { schema });
+    // Create database directory if it doesn't exist
+    if (!existsSync(dbDir) && !process.env.TURSO_DATABASE_URL) {
+      mkdirSync(dbDir, { recursive: true });
+    }
 
-// Export client for migrations
-export { client };
+    // Create database connection
+    client = new Database(dbPath);
+
+    // Enable foreign keys
+    client.pragma('foreign_keys = ON');
+
+    // Create the database instance
+    dbInstance = drizzle(client, { schema });
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    throw error;
+  }
+
+  return dbInstance;
+}
+
+// Initialize on first import
+export const db = new Proxy({}, {
+  get: (_target, prop) => {
+    const instance = initializeDatabase();
+    return instance[prop as keyof typeof instance];
+  },
+}) as any;

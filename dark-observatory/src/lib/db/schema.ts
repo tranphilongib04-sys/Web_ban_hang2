@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, real, datetime } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, real } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
 
 /**
@@ -12,8 +12,8 @@ export const products = sqliteTable('products', {
   price: real('price').notNull(),
   quantity: integer('quantity').default(0),
   category: text('category'),
-  createdAt: datetime('created_at').defaultNow(),
-  updatedAt: datetime('updated_at').defaultNow(),
+  createdAt: text('created_at'),
+  updatedAt: text('updated_at'),
 });
 
 /**
@@ -23,11 +23,11 @@ export const products = sqliteTable('products', {
 export const orders = sqliteTable('orders', {
   id: integer('id').primaryKey(),
   customerId: integer('customer_id').notNull(),
-  orderDate: datetime('order_date').defaultNow(),
+  orderDate: text('order_date'),
   totalAmount: real('total_amount').notNull(),
   status: text('status').default('pending'), // pending, processing, completed, cancelled
   notes: text('notes'),
-  createdAt: datetime('created_at').defaultNow(),
+  createdAt: text('created_at'),
 });
 
 /**
@@ -42,8 +42,8 @@ export const customers = sqliteTable('customers', {
   address: text('address'),
   city: text('city'),
   country: text('country'),
-  createdAt: datetime('created_at').defaultNow(),
-  updatedAt: datetime('updated_at').defaultNow(),
+  createdAt: text('created_at'),
+  updatedAt: text('updated_at'),
 });
 
 /**

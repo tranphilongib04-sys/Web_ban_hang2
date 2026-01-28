@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { AlertCircle, Search, RefreshCw } from 'lucide-react';
 
 interface InventoryItem {
@@ -98,53 +96,47 @@ export function MobileInventoryComponent() {
       <div className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b p-4 space-y-3">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Tồn Kho</h1>
-          <Button
-            variant="outline"
-            size="sm"
+          <button
             onClick={handleRefresh}
             disabled={isLoading}
+            className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </Button>
+          </button>
         </div>
 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
+          <input
+            type="text"
             placeholder="Tìm sản phẩm..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 rounded-lg"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+            className="pl-10 rounded-lg w-full p-2 border border-gray-300 dark:border-gray-600"
           />
         </div>
 
         {/* Filter Buttons */}
         <div className="flex gap-2">
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            size="sm"
+          <button
             onClick={() => setFilter('all')}
-            className="text-xs"
+            className={`text-xs px-3 py-1 rounded ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
           >
             Tất Cả ({stats.total})
-          </Button>
-          <Button
-            variant={filter === 'low' ? 'default' : 'outline'}
-            size="sm"
+          </button>
+          <button
             onClick={() => setFilter('low')}
-            className="text-xs bg-yellow-500 hover:bg-yellow-600 text-white"
+            className={`text-xs px-3 py-1 rounded ${filter === 'low' ? 'bg-yellow-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
           >
             Sắp Hết ({stats.low})
-          </Button>
-          <Button
-            variant={filter === 'critical' ? 'default' : 'outline'}
-            size="sm"
+          </button>
+          <button
             onClick={() => setFilter('critical')}
-            className="text-xs bg-red-500 hover:bg-red-600 text-white"
+            className={`text-xs px-3 py-1 rounded ${filter === 'critical' ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
           >
             Hết ({stats.critical})
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -233,9 +225,9 @@ export function MobileInventoryComponent() {
 
       {/* Action Footer */}
       <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t p-4">
-        <Button className="w-full bg-blue-500 hover:bg-blue-600">
+        <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">
           Nhập Hàng Mới
-        </Button>
+        </button>
       </div>
     </div>
   );
