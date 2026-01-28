@@ -48,8 +48,8 @@ export function MobileTodayComponent() {
   });
 
   const [orders, setOrders] = useState<TodayOrder[]>([
-    { id: 3, time: '14:15', customer: 'Lê Văn C', amount: 2500000, items: 1, status: 'pending', paid: false, extended: false },
-    { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending', paid: false, extended: false },
+    { id: 3, time: '14:15', customer: 'Lê Văn C', amount: 2500000, items: 1, status: 'pending', paid: true, extended: true },
+    { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending', paid: true, extended: true },
   ]);
 
   const [reminders, setReminders] = useState<Reminder[]>([]);

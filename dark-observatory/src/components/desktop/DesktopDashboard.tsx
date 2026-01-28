@@ -79,8 +79,8 @@ const StatCard = ({ icon: Icon, label, value, trend }: { icon: any; label: strin
 export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [orders, setOrders] = useState<TodayOrder[]>([
-    { id: '#ORD002', customer: 'Trần B', products: 1, value: '1.2M', status: 'pending', paid: false, extended: false },
-    { id: '#ORD004', customer: 'Hoàng D', products: 2, value: '1.8M', status: 'pending', paid: false, extended: false },
+    { id: '#ORD002', customer: 'Trần B', products: 1, value: '1.2M', status: 'pending', paid: true, extended: true },
+    { id: '#ORD004', customer: 'Hoàng D', products: 2, value: '1.8M', status: 'pending', paid: true, extended: true },
   ]);
 
   const getTimeUntil = (deadline: Date, now: Date): string => {
