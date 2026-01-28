@@ -19,6 +19,8 @@ interface TodayOrder {
   amount: number;
   items: number;
   status: 'pending' | 'completed' | 'cancelled';
+  paid: boolean; // thêm trạng thái thanh toán
+  extended: boolean; // thêm trạng thái gia hạn
 }
 
 interface Reminder {
@@ -46,8 +48,8 @@ export function MobileTodayComponent() {
   });
 
   const [orders, setOrders] = useState<TodayOrder[]>([
-    { id: 3, time: '14:15', customer: 'Lê Văn C', amount: 2500000, items: 1, status: 'pending' },
-    { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending' },
+    { id: 3, time: '14:15', customer: 'Lê Văn C', amount: 2500000, items: 1, status: 'pending', paid: false, extended: false },
+    { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending', paid: false, extended: false },
   ]);
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
@@ -72,9 +74,9 @@ export function MobileTodayComponent() {
     today.setHours(0, 0, 0, 0);
     const newReminders: Reminder[] = [];
 
-    // Check pending orders
-    const pendingOrdersCount = orders.filter(o => o.status === 'pending').length;
-    if (pendingOrdersCount > 0) {
+    // Check pending orders (chỉ những chưa thanh toán & chưa gia hạn)
+    const unpaidPendingOrders = orders.filter(o => o.status === 'pending' && !o.paid && !o.extended);
+    if (unpaidPendingOrders.length > 0) {
       const deadline1 = new Date(now);
       deadline1.setHours(18, 0, 0);
       
@@ -83,7 +85,7 @@ export function MobileTodayComponent() {
         newReminders.push({
           id: 1,
           type: 'urgent',
-          title: `${pendingOrdersCount} đơn hàng chờ xử lý`,
+          title: `${unpaidPendingOrders.length} đơn hàng chờ xử lý`,
           description: 'Cần xử lý trước 18:00 hôm nay',
           dueTime: '18:00',
           deadline: deadline1,
@@ -125,16 +127,16 @@ export function MobileTodayComponent() {
       });
     }
 
-    // Check unpaid orders - chỉ hôm nay
-    const unpaidCount = 2; // mock data
-    if (unpaidCount > 0) {
+    // Check unpaid orders (chỉ những chưa thanh toán & chưa gia hạn) - chỉ hôm nay
+    const unpaidOrders = orders.filter(o => !o.paid && !o.extended);
+    if (unpaidOrders.length > 0) {
       const deadline4 = new Date(now);
       deadline4.setHours(19, 0, 0);
       if (deadline4 >= now && deadline4.toDateString() === today.toDateString()) {
         newReminders.push({
           id: 4,
           type: 'urgent',
-          title: `${unpaidCount} đơn hàng chưa thanh toán`,
+          title: `${unpaidOrders.length} đơn hàng chưa thanh toán`,
           description: 'Cần nhắc khách hàng thanh toán',
           dueTime: '19:00',
           deadline: deadline4,

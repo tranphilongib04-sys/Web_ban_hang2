@@ -28,7 +28,19 @@ interface Reminder {
   title: string;
   description: string;
   dueTime: string;
+  deadline: Date;
+  isOverdue: boolean;
   timeUntil: string;
+}
+
+interface TodayOrder {
+  id: string;
+  customer: string;
+  products: number;
+  value: string;
+  status: 'pending' | 'processing' | 'completed';
+  paid: boolean;
+  extended: boolean;
 }
 
 const salesData = [
@@ -66,75 +78,12 @@ const StatCard = ({ icon: Icon, label, value, trend }: { icon: any; label: strin
 
 export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [orders, setOrders] = useState<TodayOrder[]>([
+    { id: '#ORD002', customer: 'Trần B', products: 1, value: '1.2M', status: 'pending', paid: false, extended: false },
+    { id: '#ORD004', customer: 'Hoàng D', products: 2, value: '1.8M', status: 'pending', paid: false, extended: false },
+  ]);
 
-  useEffect(() => {
-    const now = new Date();
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
-    const newReminders: Reminder[] = [];
-
-    // Pending orders reminder - chỉ hôm nay
-    const deadline1 = new Date(now);
-    deadline1.setHours(18, 0, 0);
-    if (deadline1 >= now && deadline1.toDateString() === today.toDateString()) {
-      newReminders.push({
-        id: 1,
-        type: 'urgent',
-        title: '2 đơn hàng chờ xử lý',
-        description: 'Cần xử lý trước 18:00 hôm nay',
-        dueTime: '18:00',
-        timeUntil: getTimeUntil(18, 0, now),
-      });
-    }
-
-    // Unpaid orders reminder - chỉ hôm nay
-    const deadline2 = new Date(now);
-    deadline2.setHours(19, 0, 0);
-    if (deadline2 >= now && deadline2.toDateString() === today.toDateString()) {
-      newReminders.push({
-        id: 2,
-        type: 'urgent',
-        title: '2 đơn hàng chưa thanh toán',
-        description: 'Cần nhắc khách hàng thanh toán',
-        dueTime: '19:00',
-        timeUntil: getTimeUntil(19, 0, now),
-      });
-    }
-
-    // Inventory check reminder - chỉ hôm nay
-    const deadline3 = new Date(now);
-    deadline3.setHours(20, 0, 0);
-    if (deadline3 >= now && deadline3.toDateString() === today.toDateString()) {
-      newReminders.push({
-        id: 3,
-        type: 'warning',
-        title: 'Kiểm tra tồn kho',
-        description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
-        dueTime: '20:00',
-        timeUntil: getTimeUntil(20, 0, now),
-      });
-    }
-
-    // Daily report reminder - chỉ hôm nay
-    const deadline4 = new Date(now);
-    deadline4.setHours(22, 0, 0);
-    if (deadline4 >= now && deadline4.toDateString() === today.toDateString()) {
-      newReminders.push({
-        id: 4,
-        type: 'info',
-        title: 'Xuất báo cáo ngày',
-        description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
-        dueTime: '22:00',
-        timeUntil: getTimeUntil(22, 0, now),
-      });
-    }
-
-    setReminders(newReminders);
-  }, []);
-
-  const getTimeUntil = (hour: number, minute: number, now: Date): string => {
-    const deadline = new Date(now);
-    deadline.setHours(hour, minute, 0);
+  const getTimeUntil = (deadline: Date, now: Date): string => {
     const diff = deadline.getTime() - now.getTime();
     if (diff < 0) return 'Quá hạn';
     
@@ -145,6 +94,87 @@ export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
     if (minutes > 0) return `${minutes} phút`;
     return 'Sắp hết giờ';
   };
+
+  useEffect(() => {
+    const now = new Date();
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    const newReminders: Reminder[] = [];
+
+    // Check unpaid pending orders (chỉ những chưa thanh toán & chưa gia hạn)
+    const unpaidPendingOrders = orders.filter(o => o.status === 'pending' && !o.paid && !o.extended);
+    if (unpaidPendingOrders.length > 0) {
+      const deadline1 = new Date(now);
+      deadline1.setHours(18, 0, 0);
+      
+      // Chỉ thêm nếu deadline là hôm nay và chưa quá hạn
+      if (deadline1 >= now && deadline1.toDateString() === today.toDateString()) {
+        newReminders.push({
+          id: 1,
+          type: 'urgent',
+          title: `${unpaidPendingOrders.length} đơn hàng chờ xử lý`,
+          description: 'Cần xử lý trước 18:00 hôm nay',
+          dueTime: '18:00',
+          deadline: deadline1,
+          isOverdue: deadline1 < now,
+          timeUntil: getTimeUntil(deadline1, now),
+        });
+      }
+    }
+
+    // Inventory low stock reminder - chỉ hôm nay
+    const deadline2 = new Date(now);
+    deadline2.setHours(20, 0, 0);
+    if (deadline2 >= now && deadline2.toDateString() === today.toDateString()) {
+      newReminders.push({
+        id: 2,
+        type: 'warning',
+        title: 'Kiểm tra tồn kho',
+        description: '3 sản phẩm có tồn kho dưới mức cảnh báo',
+        dueTime: '20:00',
+        deadline: deadline2,
+        isOverdue: deadline2 < now,
+        timeUntil: getTimeUntil(deadline2, now),
+      });
+    }
+
+    // Daily report reminder - chỉ hôm nay
+    const deadline3 = new Date(now);
+    deadline3.setHours(22, 0, 0);
+    if (deadline3 >= now && deadline3.toDateString() === today.toDateString()) {
+      newReminders.push({
+        id: 3,
+        type: 'info',
+        title: 'Xuất báo cáo ngày',
+        description: 'Nhớ xuất báo cáo bán hàng cuối ngày',
+        dueTime: '22:00',
+        deadline: deadline3,
+        isOverdue: deadline3 < now,
+        timeUntil: getTimeUntil(deadline3, now),
+      });
+    }
+
+    // Check unpaid orders (chỉ những chưa thanh toán & chưa gia hạn) - chỉ hôm nay
+    const unpaidOrders = orders.filter(o => !o.paid && !o.extended);
+    if (unpaidOrders.length > 0) {
+      const deadline4 = new Date(now);
+      deadline4.setHours(19, 0, 0);
+      if (deadline4 >= now && deadline4.toDateString() === today.toDateString()) {
+        newReminders.push({
+          id: 4,
+          type: 'urgent',
+          title: `${unpaidOrders.length} đơn hàng chưa thanh toán`,
+          description: 'Cần nhắc khách hàng thanh toán',
+          dueTime: '19:00',
+          deadline: deadline4,
+          isOverdue: deadline4 < now,
+          timeUntil: getTimeUntil(deadline4, now),
+        });
+      }
+    }
+
+    setReminders(newReminders.sort((a, b) => a.deadline.getTime() - b.deadline.getTime()));
+  }, [orders]);
 
   const getReminderIcon = (type: string) => {
     switch (type) {
@@ -345,10 +375,7 @@ export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
               </tr>
             </thead>
             <tbody>
-              {[
-                { id: '#ORD002', customer: 'Trần B', products: 1, value: '1.2M', status: 'Đang xử lý' },
-                { id: '#ORD004', customer: 'Hoàng D', products: 2, value: '1.8M', status: 'Chờ thanh toán' },
-              ].map((order) => (
+              {orders.map((order) => (
                 <tr key={order.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white">
                     {order.id}
@@ -365,14 +392,14 @@ export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
                   <td className="py-3 px-4 text-sm">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        order.status === 'Giao hàng'
+                        order.status === 'completed'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : order.status === 'Đang xử lý'
+                          : order.status === 'pending'
                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                             : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                       }`}
                     >
-                      {order.status}
+                      {order.status === 'pending' ? 'Đang xử lý' : order.status === 'completed' ? 'Hoàn thành' : 'Xử lý'}
                     </span>
                   </td>
                 </tr>
