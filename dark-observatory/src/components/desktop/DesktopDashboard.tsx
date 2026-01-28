@@ -320,11 +320,8 @@ export default function DesktopDashboard({ activeTab }: DesktopDashboardProps) {
             </thead>
             <tbody>
               {[
-                { id: '#ORD001', customer: 'Nguyễn A', products: 3, value: '2.5M', status: 'Giao hàng' },
                 { id: '#ORD002', customer: 'Trần B', products: 1, value: '1.2M', status: 'Đang xử lý' },
-                { id: '#ORD003', customer: 'Lê C', products: 5, value: '5.8M', status: 'Giao hàng' },
                 { id: '#ORD004', customer: 'Hoàng D', products: 2, value: '1.8M', status: 'Chờ thanh toán' },
-                { id: '#ORD005', customer: 'Phạm E', products: 4, value: '3.5M', status: 'Giao hàng' },
               ].map((order) => (
                 <tr key={order.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white">

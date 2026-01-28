@@ -46,11 +46,7 @@ export function MobileTodayComponent() {
   });
 
   const [orders, setOrders] = useState<TodayOrder[]>([
-    { id: 1, time: '09:45', customer: 'Nguyễn Văn A', amount: 5000000, items: 2, status: 'completed' },
-    { id: 2, time: '11:20', customer: 'Trần Thị B', amount: 3000000, items: 1, status: 'completed' },
     { id: 3, time: '14:15', customer: 'Lê Văn C', amount: 2500000, items: 1, status: 'pending' },
-    { id: 4, time: '15:30', customer: 'Phạm Thị D', amount: 8000000, items: 3, status: 'completed' },
-    { id: 5, time: '16:45', customer: 'Vũ Văn E', amount: 4500000, items: 2, status: 'completed' },
     { id: 6, time: '17:20', customer: 'Đỗ Thị F', amount: 3000000, items: 1, status: 'pending' },
   ]);
 
