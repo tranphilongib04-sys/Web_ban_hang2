@@ -12,7 +12,7 @@ export const metadata = {
 
 export default function MobileApp() {
   return (
-    <div className="md:hidden h-screen w-screen overflow-hidden">
+    <div className="h-screen w-screen overflow-hidden">
       <MobileAppLayout />
     </div>
   );
